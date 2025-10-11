@@ -3,18 +3,29 @@ import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 
 function EditUserModal({ user, onClose, onSave }) {
-  const [formData, setFormData] = useState({});
+  const initialFormState = {
+    account_name: '',
+    service_type: 'X-Ray',
+    account_type: 'Basic',
+    expire_date: '',
+    total_devices: 1,
+    data_limit_gb: 100,
+    remark: '',
+  };
+  const [formData, setFormData] = useState(initialFormState);
 
   useEffect(() => {
     if (user) {
-      setFormData({
-        account_name: user.account_name || '',
-        service_type: user.service_type || 'X-Ray',
-        account_type: user.account_type || 'Basic',
-        expire_date: user.expire_date ? new Date(user.expire_date).toISOString().split('T')[0] : '',
-        total_devices: user.total_devices || 1,
-        data_limit_gb: user.data_limit_gb || '',
-      });
+      setFormData(prev => ({
+        ...prev,
+        account_name: user.account_name ?? prev.account_name,
+        service_type: user.service_type ?? prev.service_type,
+        account_type: user.account_type ?? prev.account_type,
+        expire_date: user.expire_date ? new Date(user.expire_date).toISOString().split('T')[0] : prev.expire_date,
+        total_devices: user.total_devices ?? prev.total_devices,
+        data_limit_gb: user.data_limit_gb !== null && user.data_limit_gb !== undefined ? user.data_limit_gb : prev.data_limit_gb,
+        remark: user.remark ?? prev.remark,
+      }));
     }
   }, [user]);
 
@@ -47,7 +58,7 @@ function EditUserModal({ user, onClose, onSave }) {
   return (
     <AnimatePresence>
       <motion.div className="modal-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
-        <motion.div className="modal-content" initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 50, opacity: 0 }} onClick={(e) => e.stopPropagation()}>
+        <motion.div className="modal-content compact-form" initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 50, opacity: 0 }} onClick={(e) => e.stopPropagation()}>
           <form onSubmit={handleSubmit} className="modal-form">
             <h3>Edit User: {user.account_name}</h3>
             
@@ -69,35 +80,33 @@ function EditUserModal({ user, onClose, onSave }) {
               </select>
             </div>
             
-            <div className="form-grid">
-              <div className="form-group">
-                <label htmlFor="edit_total_devices">Devices</label>
-                <input id="edit_total_devices" name="total_devices" value={formData.total_devices} onChange={handleChange} type="number" min="1" />
-              </div>
-              {formData.account_type === 'Basic' && (
-                <div className="form-group">
-                  <label htmlFor="edit_data_limit_gb">Data Limit (GB)</label>
-                  <input id="edit_data_limit_gb" name="data_limit_gb" value={formData.data_limit_gb} onChange={handleChange} type="number" min="0" />
-                </div>
-              )}
+            {/* REMOVED the form-grid and stacked the inputs */}
+            <div className="form-group">
+              <label htmlFor="edit_total_devices">Devices</label>
+              <input id="edit_total_devices" name="total_devices" value={formData.total_devices} onChange={handleChange} type="number" min="1" />
             </div>
-            
-            <label className="checkbox-label">
-                <input name="unlimited" type="checkbox" checked={formData.account_type === 'Unlimited'} onChange={handleChange} />
-                {/* New structure for custom checkbox */}
-                <span className="custom-checkbox">
-                    <span className="checkmark">
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M20 6L9 17L4 12" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                </span>
-                </span>
-                <span>Unlimited Account</span>
-            </label>
-            <div className="modal-actions">
-                <button type="button" onClick={onClose} className="btn-secondary">Cancel</button>
-                <button type="submit">Save Changes</button>
+            {formData.account_type === 'Basic' && (
+              <div className="form-group">
+                <label htmlFor="edit_data_limit_gb">Data Limit (GB)</label>
+                <input id="edit_data_limit_gb" name="data_limit_gb" value={formData.data_limit_gb} onChange={handleChange} type="number" min="0" />
               </div>
+            )}
+            
+             <div className="form-group">
+              <label htmlFor="edit_remark">Remark (Optional)</label>
+              <textarea id="edit_remark" name="remark" value={formData.remark} onChange={handleChange} rows="2"></textarea>
+            </div>
+
+            <label className="checkbox-label">
+              <input name="unlimited" type="checkbox" checked={formData.account_type === 'Unlimited'} onChange={handleChange} />
+              <span className="custom-checkbox"><span className="checkmark"></span></span>
+              <span>Unlimited Account</span>
+            </label>
+
+            <div className="modal-actions">
+              <button type="button" onClick={onClose} className="btn-secondary">Cancel</button>
+              <button type="submit" className="submit-btn">Save Changes</button>
+            </div>
           </form>
         </motion.div>
       </motion.div>
@@ -106,3 +115,4 @@ function EditUserModal({ user, onClose, onSave }) {
 }
 
 export default EditUserModal;
+

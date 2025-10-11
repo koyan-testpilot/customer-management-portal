@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-function AddUserForm({ serverId, onUserAdded }) {
+function AddUserForm({ serverId, onUserAdded, onClose }) {
   const initialFormState = {
     account_name: '',
     service_type: 'X-Ray',
@@ -9,6 +9,7 @@ function AddUserForm({ serverId, onUserAdded }) {
     expire_date: '',
     total_devices: 1,
     data_limit_gb: 100,
+    remark: '',
   };
   const [formData, setFormData] = useState(initialFormState);
 
@@ -42,7 +43,7 @@ function AddUserForm({ serverId, onUserAdded }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="add-user-form">
+  <form onSubmit={handleSubmit} className="add-user-form compact-form">
       <h4>Add New User</h4>
       
       <div className="form-group">
@@ -76,6 +77,11 @@ function AddUserForm({ serverId, onUserAdded }) {
             </div>
           )}
       </div>
+
+      <div className="form-group">
+        <label htmlFor="remark">Remark (Optional)</label>
+        <textarea id="remark" name="remark" value={formData.remark} onChange={handleChange} rows="2" placeholder="Optional note about the account" />
+      </div>
       
       <label className="checkbox-label">
             <input name="unlimited" type="checkbox" checked={formData.account_type === 'Unlimited'} onChange={handleChange} />
@@ -90,7 +96,10 @@ function AddUserForm({ serverId, onUserAdded }) {
             <span>Unlimited Account</span>
       </label>
 
-      <button type="submit" className="submit-btn">+ Add User</button>
+      <div className="form-buttons">
+        <button type="button" className="btn-secondary" onClick={() => { (onClose || (() => {}))(); }}>Cancel</button>
+        <button type="submit" className="submit-btn">+ Add User</button>
+      </div>
     </form>
   );
 }
